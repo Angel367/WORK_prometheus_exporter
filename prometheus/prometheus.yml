@@ -1,0 +1,9 @@
+scrape_configs:
+  - job_name: node
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['moy-zakupki.ru:9100', 'moy-zakupki.ru:8080']
+  - job_name: 'my_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['158.160.129.126:9101']  # Replace with the actual address if needed
