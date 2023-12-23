@@ -31,7 +31,7 @@ def collect_metrics():
 
 
 if __name__ == '__main__':
-    start_http_server(9102)
+    start_http_server(9101)
     while True:
         collect_metrics()
         time.sleep(5)
