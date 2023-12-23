@@ -4,28 +4,34 @@ import requests
 from prometheus_client import start_http_server, Gauge
 
 # Create a Gauge metric
-my_metric = Gauge('frontend_http_status_code', 'HTTP status code from main webpage')
+frontend_http_status_code_metric = Gauge('frontend_http_status_code', 'HTTP status code from main webpage')
+backend_http_status_code_metric = Gauge('backend_http_status_code', 'HTTP status code from main webpage')
 
 
-def check_image_status(url='https://moy-zakupki.ru/'):
+def check_frontend_status(url='https://moy-zakupki.ru/'):
     try:
         response = requests.get(url)
         return response.status_code
 
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException:
+        return -1
+
+
+def check_backend_status(url='https://moy-zakupki.ru/api/okpd/'):
+    try:
+        response = requests.get(url)
+        return response.status_code
+    except requests.exceptions.RequestException:
         return -1
 
 
 def collect_metrics():
-    metric_value = check_image_status()
-    my_metric.set(int(metric_value))
+    frontend_http_status_code_metric.set(int(check_frontend_status()))
+    backend_http_status_code_metric.set(int(check_backend_status()))
 
 
 if __name__ == '__main__':
-    # Start an HTTP server to expose metrics
-    start_http_server(9101)
-
-    # Periodically collect and update metrics
+    start_http_server(9102)
     while True:
         collect_metrics()
-        time.sleep(5)  # Adjust the sleep interval as needed
+        time.sleep(5)
