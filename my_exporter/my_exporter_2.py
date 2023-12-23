@@ -6,6 +6,18 @@ from prometheus_client import start_http_server, Counter
 http_status_counter = Counter('http_codes_status_counter', 'Amount of each http code status from server', ['status'])
 
 
+def get_docker_container_id_by_name(name="mz_nginx"):
+    command = f"docker ps -q --filter ancestor={name}"
+    try:
+        container_id = subprocess.run(command, shell=True, capture_output=True, text=True)
+        if container_id.returncode == 0:
+            return container_id.stdout[:-1]
+        else:
+            return f"Error executing command: {container_id.stderr}"
+    except Exception as e:
+        return f"Exception: {str(e)}"
+
+
 def get_docker_logs(container_id, since_time):
     command = f"docker logs {container_id} --since {since_time}"
     try:
@@ -40,9 +52,10 @@ def collect_metrics(response_codes_count):
 
 
 if __name__ == '__main__':
-    logs = get_docker_logs('CONTAINER_ID', "5s")
-    parsed_logs = parse_docker_logs(logs)
     start_http_server(9101)
     while True:
+        container_id = get_docker_container_id_by_name()
+        logs = get_docker_logs(get_docker_container_id_by_name(), "5s")
+        parsed_logs = parse_docker_logs(logs)
         collect_metrics(parsed_logs)
         time.sleep(5)
